@@ -45,7 +45,7 @@ infra_rg=$(az aks show --resource-group $aksClusterGroupName --name $aksName --o
 # Configure "kubectl" to connect to the Kubernetes cluster
 az aks get-credentials --resource-group $aksClusterGroupName --name $aksName --admin --overwrite-existing
 
-cat <<EOF >> akswinsample.yaml
+cat <<EOF > akswinsample.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,7 +84,7 @@ spec:
     app: sample
 EOF
 
-cat <<EOF >> akswinhostsystemprocess.yaml
+cat <<EOF > akswinhostsystemprocess.yaml
 apiVersion: v1
 kind: Pod
 metadata:
