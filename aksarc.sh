@@ -28,9 +28,9 @@ az provider register --namespace Microsoft.ExtendedLocation --wait
 az extension add --upgrade --yes --name connectedk8s
 
 # Connect the Kubernetes cluster to Azure Arc
-connectedclustermame="$aksClusterGroupName-connected" # Name of the connected cluster resource
-az connectedk8s connect --resource-group $connectedclustermame --name $clusterName
+connectedclustermame="${aksClusterGroupName}-connected" # Name of the connected cluster resource
+az connectedk8s connect --resource-group $aksClusterGroupName --name $connectedclustermame
 
 # Confirm the cluster is connected
-az connectedk8s show --resource-group $groupName --name $clusterName
+az connectedk8s show --resource-group $aksClusterGroupName --name $connectedclustermame
 

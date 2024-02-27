@@ -8,7 +8,7 @@ vm="dockerVM"
 az group create -n $rg -l $loc
 
 # Create ACR resource
-az acr create -n $acrname -g $rg --sku Premium --public-network-enabled False
+az acr create -n $acrname -g $rg --sku Premium # --public-network-enabled False
 
 # Create a docker-enabled VM
 az vm create \
@@ -40,6 +40,10 @@ sudo docker run -it hello-world
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# Login to the ACR
+# az login
+# az acr login --name $acrname
 
 # Exit ssh session
 exit
