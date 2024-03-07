@@ -5,3 +5,12 @@ Considering that we also need to keep Azure credit costs low, the environment re
 ## Before you use
 The scripts can be run from a terminal console with the built-in `sh` command for MacOS or Linux.
 For Windows Client, the .sh scripts can be opened directly if you have Git installed for Windows Client.
+
+(!) Once the repository has been cloned, this is meant to be opened in your IDE and it's up to the user to customize it to your preference. In future versions of the code in this repository, there will be less and less need for that, though this is how it should be used at the moment
+
+## Automated troubleshooting
+Some of the scripts in this repository are automating troubleshooting scenarios.
+
+For exmaple, you might have a basic AKS cluster configuration and when you view the workload in the Azure Portal, you click on 'Pods' and you get error '403 Forbidden', because your cluster was created with the Kubernetes RBAC identity model 
+In this situation you may run the `aks-adminaccess-crb.sh` script example which showcases the required clusterRoleBinding which allows the required access. 
+(*) Don't forget to add your own Azure account address instead the one currently in the script.
