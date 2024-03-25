@@ -1,5 +1,6 @@
 # Setting Variables
-acrname="myacr234235234"
+namesuffix=$((10000 + RANDOM % 99999))
+acrname="myacr$namesuffix"
 rg="acrRG1"
 loc='northeurope'
 vm="dockerVM"
