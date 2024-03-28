@@ -27,9 +27,10 @@ vnetId=$(az network vnet show --resource-group $aksClusterGroupName --name aksVn
 az aks create \
 --resource-group $aksClusterGroupName \
 --name $aksName \
---node-count 3 \
+--node-count 1 \
 --network-plugin azure \
 --vnet-subnet-id $subnetId \
+--outbound-type userDefinedRouting \
 --enable-aad --generate-ssh-keys
 
 # Wait for the AKS cluster creation to be in Running state
