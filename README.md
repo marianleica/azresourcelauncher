@@ -6,7 +6,19 @@ Considering that we also need to keep Azure credit costs low, the environment re
 The scripts can be run from a terminal console with the built-in `sh` command for MacOS or Linux.
 For Windows Client, the .sh scripts can be opened directly if you have Git installed for Windows Client.
 
+Here's how you should get it ready to use:
+
+### For Linux users
+
+### For MacOS users
+
+### For Windows users
+
 (!) Once the repository has been cloned, this is meant to be opened in your IDE and it's up to the user to customize it to your preference. In future versions of the code in this repository, there will be less and less need for that, though this is how it should be used at the moment
+
+## Covered ccenarios and how to run them
+
+`sh aksbasic.sh` -> this creates a basic AKS cluster with kubenet CNI and 3 nodes in a system mode node pool, after which it connects you to the cluster API
 
 ## Automated troubleshooting
 Some of the scripts in this repository are automating troubleshooting scenarios.
