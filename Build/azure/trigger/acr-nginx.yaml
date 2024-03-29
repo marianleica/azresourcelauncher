@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: myacr234235234.azurecr.io/nginx:v1
+        image: $acrname.azurecr.io/nginx:v1
         ports:
         - containerPort: 80
