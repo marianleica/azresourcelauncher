@@ -20,7 +20,7 @@ Here's how you should get it ready to use:
 
 `sh aksbasic.sh` -> this creates a basic AKS cluster with kubenet CNI and 3 nodes in a system mode node pool, after which it connects you to the cluster API
 
-## Automated troubleshooting
+## Automated troubleshooting scenarios
 Some of the scripts in this repository are automating troubleshooting scenarios.
 
 For example, you might have a basic AKS cluster configuration and when you view the workload in the Azure Portal, you click on 'Pods' and you get error '403 Forbidden', because your cluster was created with the Kubernetes RBAC identity model 
