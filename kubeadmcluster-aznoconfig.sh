@@ -17,7 +17,6 @@ subnet="kube"
 nodeimage="Ubuntu2204"
 adminuser="maleica"
 
-
 # Step 1. Create infrastructure: VNET, NSG, 2 master VMs, 2 worker VMs, load balncer for master VMs
 
 az group create -n kubeadm -l uksouth
@@ -29,9 +28,13 @@ az network vnet create \
     --subnet-name kube \
     --subnet-prefix 192.168.0.0/16
 
+sleep 1
+
 az network nsg create \
     --resource-group kubeadm \
     --name kubeadm
+
+sleep 1
 
 az network nsg rule create \
     --resource-group kubeadm \
@@ -42,6 +45,8 @@ az network nsg rule create \
     --destination-port-range 22 \
     --access allow
 
+sleep 1
+
 az network nsg rule create \
     --resource-group kubeadm \
     --nsg-name kubeadm \
@@ -51,11 +56,15 @@ az network nsg rule create \
     --destination-port-range 6443 \
     --access allow
 
+sleep 1
+
 az network vnet subnet update \
     -g kubeadm \
     -n kube \
     --vnet-name kubeadm \
     --network-security-group kubeadm
+
+sleep 1
 
 # Creating the Virtual Machines
 
@@ -68,6 +77,8 @@ az vm create -n kube-master-1 -g kubeadm \
 --nsg kubeadm \
 --public-ip-sku Standard --no-wait
 
+sleep 2
+
 az vm create -n kube-master-2 -g kubeadm \
 --image Ubuntu2204 \
 --vnet-name kubeadm --subnet kube \
@@ -76,6 +87,8 @@ az vm create -n kube-master-2 -g kubeadm \
 --size Standard_D2ds_v4 \
 --nsg kubeadm \
 --public-ip-sku Standard --no-wait
+
+sleep 2
 
 az vm create -n kube-worker-1 -g kubeadm \
 --image Ubuntu2204 \
@@ -86,6 +99,8 @@ az vm create -n kube-worker-1 -g kubeadm \
 --nsg kubeadm \
 --public-ip-sku Standard --no-wait
 
+sleep 2
+
 az vm create -n kube-worker-2 -g kubeadm \
 --image Ubuntu2204 \
 --vnet-name kubeadm --subnet kube \
@@ -95,6 +110,8 @@ az vm create -n kube-worker-2 -g kubeadm \
 --nsg kubeadm \
 --public-ip-sku Standard
 
+sleep 2
+
 # Creating the load balancer
 
 az network public-ip create \
@@ -102,6 +119,8 @@ az network public-ip create \
     --name controlplaneip \
     --sku Standard \
     --dns-name maleicakubeadm
+
+sleep 1
 
  az network lb create \
     --resource-group kubeadm \
@@ -111,12 +130,16 @@ az network public-ip create \
     --frontend-ip-name controlplaneip \
     --backend-pool-name masternodes
 
+sleep 1
+
 az network lb probe create \
     --resource-group kubeadm \
     --lb-name kubemaster \
     --name kubemasterweb \
     --protocol tcp \
     --port 6443
+
+sleep 1
 
 az network lb rule create \
     --resource-group kubeadm \
@@ -132,12 +155,16 @@ az network lb rule create \
     --idle-timeout 15 \
     --enable-tcp-reset true
 
+sleep 1
+
 az network nic ip-config address-pool add \
     --address-pool masternodes \
     --ip-config-name ipconfigkube-master-1 \
     --nic-name kube-master-1VMNic \
     --resource-group kubeadm \
     --lb-name kubemaster
+
+sleep 1
 
 az network nic ip-config address-pool add \
     --address-pool masternodes \
@@ -146,13 +173,15 @@ az network nic ip-config address-pool add \
     --resource-group kubeadm \
     --lb-name kubemaster
 
+sleep 1
+
 # Getting public IPs of all the nodes ready
 
-MASTER1IP=`az vm list-ip-addresses -g kubeadm -n kube-master-1 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-MASTER2IP=`az vm list-ip-addresses -g kubeadm -n kube-master-2 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-WORKER1IP=`az vm list-ip-addresses -g kubeadm -n kube-worker-1 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-WORKER2IP=`az vm list-ip-addresses -g kubeadm -n kube-worker-2 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
+MASTER1IP=$(az vm list-ip-addresses -g kubeadm -n kube-master-1 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+MASTER2IP=$(az vm list-ip-addresses -g kubeadm -n kube-master-2 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+WORKER1IP=$(az vm list-ip-addresses -g kubeadm -n kube-worker-1 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+WORKER2IP=$(az vm list-ip-addresses -g kubeadm -n kube-worker-2 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)

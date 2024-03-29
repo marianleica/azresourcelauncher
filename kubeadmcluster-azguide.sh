@@ -17,7 +17,6 @@ subnet="kube"
 nodeimage="Ubuntu2204"
 adminuser="maleica"
 
-
 # Step 1. Create infrastructure: VNET, NSG, 2 master VMs, 2 worker VMs, load balncer for master VMs
 
 az group create -n kubeadm -l uksouth
@@ -148,19 +147,21 @@ az network nic ip-config address-pool add \
 
 # Getting public IPs of all the nodes ready
 
-MASTER1IP=`az vm list-ip-addresses -g kubeadm -n kube-master-1 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-MASTER2IP=`az vm list-ip-addresses -g kubeadm -n kube-master-2 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-WORKER1IP=`az vm list-ip-addresses -g kubeadm -n kube-worker-1 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
-WORKER2IP=`az vm list-ip-addresses -g kubeadm -n kube-worker-2 \
---query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv`
+MASTER1IP=$(az vm list-ip-addresses -g kubeadm -n kube-master-1 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+MASTER2IP=$(az vm list-ip-addresses -g kubeadm -n kube-master-2 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+WORKER1IP=$(az vm list-ip-addresses -g kubeadm -n kube-worker-1 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+WORKER2IP=$(az vm list-ip-addresses -g kubeadm -n kube-worker-2 \
+--query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
 
 # Setup the first master node
 
+sleep 2
 ssh maleicaadmin@$MASTER1IP -o StrictHostKeyChecking=no
 
+sleep 1
 sudo apt update
 sudo apt -y install curl apt-transport-https </dev/null
 
@@ -168,9 +169,19 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 sudo apt update
-sudo apt -y install vim git curl wget kubelet kubeadm kubectl containerd </dev/null
 
-sudo apt-mark hold kubelet kubeadm kubectl
+# packages have changed
+# sudo apt -y install vim git curl wget kubelet kubeadm kubectl containerd </dev/null
+# change with what's next:
+sudo snap install kubelet --classic
+sudo snap install kubeadm --classic
+sudo snap install kubectl --classic
+sudo apt -y install containerd
+
+# this one too fails to locate package in ubuntu 2204
+# sudo apt-mark hold kubelet kubeadm kubectl
+# hold is used to mark a package as held back, which will prevent the package from being automatically installed, upgraded or removed.
+# I guess we can ignore it
 
 kubectl version --client && kubeadm version
 
@@ -208,6 +219,48 @@ EOF
 sudo sysctl --system
 
 # Setting up Kubernetes via kubeadm
+# new error here on Ubuntu 2204, can't find crictl and it's required
+# installing crictl first via wget bypasses the error of not having crictl capability
+
+VERSION="v1.26.0" # check latest version in /releases page
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+
+# new error for not having "socat" in system path
+# installing with:
+sudo apt-get install socat
+
+# socat is installed now, but new error is that kubelet is not enabled. enabling kubelet:
+# running "sudo systemctl enable kubelet.service" says it does not exist
+# finding what could be next:
+RELEASE_VERSION="v0.4.0"
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | sudo tee /etc/systemd/system/kubelet.service
+sudo mkdir -p /etc/systemd/system/kubelet.service.d
+curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo systemctl enable kubelet.service
+# passed this issue too
+
+# now the error is that conntrack was not found in system path
+sudo apt-get install conntrack
+
+# new error "port 10250 is in use" ?
+# confirmed it is in use with "netstat -plnt"
+# Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+# tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                   
+# tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+# tcp        0      0 127.0.0.1:10248         0.0.0.0:*               LISTEN      -                   
+# tcp        0      0 127.0.0.1:33285         0.0.0.0:*               LISTEN      -                   
+# tcp6       0      0 :::22                   :::*                    LISTEN      -                   
+# tcp6       0      0 :::10255                :::*                    LISTEN      -                   
+# tcp6       0      0 :::10250                :::*                    LISTEN      -                   
+# but i don't know what is using it ... it's not showing anything
+# running "netstat -lnp"
+# running "sudo netstat -lnp | grep 10250" and there you go:
+# tcp6       0      0 :::10250                :::*                    LISTEN      6506/kubelet 
+# what now? kill the kubelet and it will be complaining that the service is not running
+# maybe I can be fast enough, kill the kubelet PID and run kubeadm init, seems to be working
+# but now it's timing out waiting for the kubelet to boot up the control plane "/etc/kubernetes/manifests"
 
 sudo kubeadm init --control-plane-endpoint "maleicakubeadm.westeurope.cloudapp.azure.com:6443" --upload-certs
 
