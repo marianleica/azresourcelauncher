@@ -162,13 +162,11 @@ sleep 2
 ssh maleicaadmin@$MASTER1IP -o StrictHostKeyChecking=no
 
 sleep 1
-sudo apt update
+sudo apt-get upgrade
 sudo apt -y install curl apt-transport-https </dev/null
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-
-sudo apt update
 
 # packages have changed
 # sudo apt -y install vim git curl wget kubelet kubeadm kubectl containerd </dev/null
