@@ -18,7 +18,7 @@ Here's how you should get it ready to use:
 
 ## Covered ccenarios and how to run them
 
-`sh aksbasic.sh` -> this creates a basic AKS cluster with kubenet CNI and 3 nodes in a system mode node pool, after which it connects you to the cluster API
+`sh azjobs/aksbasic.sh` -> this creates a basic AKS cluster with kubenet CNI and 3 nodes in a system mode node pool, after which it connects you to the cluster API
 
 ## Automated troubleshooting scenarios
 Some of the scripts in this repository are automating troubleshooting scenarios.
