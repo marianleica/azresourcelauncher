@@ -14,7 +14,7 @@
 rg="kubeadm"
 vnet="kubeadm"
 subnet="kube"
-nodeimage="Ubuntu2204"
+nodeimage="Ubuntu2004"
 adminuser="maleica"
 
 # Step 1. Create infrastructure: VNET, NSG, 2 master VMs, 2 worker VMs, load balncer for master VMs
@@ -173,7 +173,7 @@ az network nic ip-config address-pool add \
     --resource-group kubeadm \
     --lb-name kubemaster
 
-sleep 1
+sleep 5
 
 # Getting public IPs of all the nodes ready
 

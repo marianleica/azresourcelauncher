@@ -95,7 +95,7 @@ spec:
   securityContext:
     windowsOptions:
       hostProcess: true
-      runAsUserName: "NT AUTHORITY\\SYSTEM"
+      runAsUserName: 'NT AUTHORITY\\SYSTEM'
   hostNetwork: true
   containers:
     - name: test
